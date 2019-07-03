@@ -1,6 +1,8 @@
 import Game from './game';
 import { CONFIG } from './constants';
 
+import '!file-loader?name=[name].[ext]!../favicon.ico';
+
 import '../css/normalize.css';
 import '../css/main.css';
 
