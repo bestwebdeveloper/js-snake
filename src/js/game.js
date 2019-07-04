@@ -14,7 +14,6 @@ class Game {
     snakeSpeedMultiplier,
     width
   }) {
-    this.root = root;
     // TODO: Find a better way of placing snakes on the field
     // TODO: Prevent snake overflowing the field
     this.snake = new Snake({
@@ -46,7 +45,6 @@ class Game {
 
   init() {
     this.world.renderSnake(this.snake);
-
     // TODO: Consider using requestAnimationFrame instead of timeouts
     this.ticker = setTimeout(this.updateWorld, this.snake.speed);
   }
@@ -62,33 +60,29 @@ class Game {
     const newX = snakeHead.x + DIRECTION_DELTAS[snakeHead.direction].x;
     const newY = snakeHead.y + DIRECTION_DELTAS[snakeHead.direction].y;
 
-    // TODO: Rearrange into a single if-statement
-    if (this.world.isInfinite || (newX >= 0 && newX < this.world.width && newY >= 0 && newY < this.world.height)) {
-      const cellCoordinate = newX + newY * this.world.width;
+    if (
+        (this.world.isInfinite || (newX >= 0 && newX < this.world.width && newY >= 0 && newY < this.world.height)) &&
+        [OBJECTS.SNAKE, OBJECTS.WALL].indexOf(this.world.getCell(newX, newY)) === -1
+    ) {
+      this.snake.prependNode(snakeHead.direction);
+      if (this.world.getCell(newX, newY) === OBJECTS.FOOD) {
+        // TODO: Consider different score values base on the food type
+        this.player.addScore( 1);
+        this.world.updateScore(this.player.score);
 
-      if ([OBJECTS.SNAKE, OBJECTS.WALL].indexOf(this.world.getCell(newX, newY)) === -1) {
-        this.snake.prependNode(snakeHead.direction);
-        if (this.world.getCell(newX, newY) === OBJECTS.FOOD) {
-          // TODO: Consider different score values base on the food type
-          this.player.addScore( 1);
-          this.world.updateScore(this.player.score);
+        // TODO: Consider different speed delta values base on the food type
+        this.snake.increaseSpeed(this.snakeSpeedMultiplier);
 
-          // TODO: Consider different speed delta values base on the food type
-          this.snake.increaseSpeed(this.snakeSpeedMultiplier);
-
-          this.world.renderFood();
-        } else {
-          this.world.setCell(this.snake.tail.x, this.snake.tail.y, OBJECTS.EMPTY);
-          this.snake.cutTail();
-        }
-
-        this.world.setCell(newX, newY, OBJECTS.SNAKE);
-        this.world.renderSnake(this.snake);
-
-        this.ticker = setTimeout(this.updateWorld, this.snake.speed);
+        this.world.renderFood();
       } else {
-        this.gameOver();
+        this.world.setCell(this.snake.tail.x, this.snake.tail.y, OBJECTS.EMPTY);
+        this.snake.cutTail();
       }
+
+      this.world.setCell(newX, newY, OBJECTS.SNAKE);
+      this.world.renderSnake(this.snake);
+
+      this.ticker = setTimeout(this.updateWorld, this.snake.speed);
     } else {
       this.gameOver();
     }
